@@ -4,7 +4,7 @@ from parsel import Selector
 from prettytable import PrettyTable
 
 
-def getting_the_path_to_ables(url: str) -> list[str]:
+def getting_the_path_to_tables(url: str) -> list[str]:
     """
         Receives the url as input and returns a list of required tables
         @:param url
@@ -66,10 +66,10 @@ def main() -> None:
     table = PrettyTable()
     url = 'https://proglib.io/p/slozhnost-algoritmov-i-operaciy-na-primere-python-2020-11-03'
     # the path to the required tables
-    table_path = getting_the_path_to_ables(url)
+    table_path: list[str] = getting_the_path_to_tables(url)
 
-    list_of_table_contents = []
-    selector_table_path = []
+    list_of_table_contents: list[list[list[list[str]]]] = []
+    selector_table_path: list[Selector] = []
 
     for table_number in range(len(table_path)):
         # converting values to the Selector type
@@ -81,7 +81,7 @@ def main() -> None:
     table.field_names = list_of_table_contents[0][0]
 
     # formation of the resulting table
-    resulting_table = filling_in_the_table(table, list_of_table_contents)
+    resulting_table: PrettyTable = filling_in_the_table(table, list_of_table_contents)
 
     print(resulting_table)
 

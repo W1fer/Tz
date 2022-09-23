@@ -7,8 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.future import Engine
-
-
+from sqlalchemy_utils import create_database, database_exists
 
 # getting declarative class
 Base = declarative_base()
@@ -21,6 +20,7 @@ class Algorithm(Base):
     operation = Column(String)
     example = Column(String)
     complexity = Column(String)
+    note = Column(String)
     type = Column(Integer)
 
 
@@ -30,7 +30,7 @@ class User(Base):
     id = Column(Integer, nullable=False, primary_key=True)
     login = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False, server_default=datetime.datetime.utcnow())
+    created_at = Column(DateTime, nullable=False, default=datetime.datetime.utcnow())
     last_request = Column(DateTime)
 
     def __str__(self):
@@ -45,14 +45,16 @@ def main() -> None:
     # create engine
     db_url: str = f"postgresql://{conf['db']['user']}:{conf['db']['password']}@{conf['db']['host']}:{conf['db']['port']}/{conf['db']['name']}"
     print(f"Connection to {db_url}")
-    db_engine: Engine = create_engine(db_url, isolation_level='AUTOCOMMIT')
-    # try:
-    db_engine.connect().execute(f"CREATE DATABASE {conf['db']['name']}")
-    # except :
-    # else:
-    # create the tables
-    Base.metadata.create_all(db_engine)
-    print("Tables created.")
+    db_engine: Engine = create_engine(db_url)
+    if not database_exists(db_engine.url):
+        # database initialization
+        create_database(db_engine.url)
+        print("Сreating a database.")
+        # Tables created
+        Base.metadata.create_all(db_engine)
+        print("Creating tables.")
+    else:
+        print("The database has already been created.")
 
 
 if __name__ == "__main__":
