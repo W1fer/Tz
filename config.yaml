@@ -1,0 +1,8 @@
+db:
+    name: tiny
+
+    user: admin
+    password: "password"
+    host: localhost
+    port: 5432
+
