@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.future import Engine
-from sqlalchemy_utils import create_database, database_exists
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
 # getting declarative class
 Base = declarative_base()
@@ -46,15 +46,14 @@ def main() -> None:
     db_url: str = f"postgresql://{conf['db']['user']}:{conf['db']['password']}@{conf['db']['host']}:{conf['db']['port']}/{conf['db']['name']}"
     print(f"Connection to {db_url}")
     db_engine: Engine = create_engine(db_url)
-    if not database_exists(db_engine.url):
-        # database initialization
-        create_database(db_engine.url)
-        print("Сreating a database.")
-        # Tables created
-        Base.metadata.create_all(db_engine)
-        print("Creating tables.")
-    else:
-        print("The database has already been created.")
+    if database_exists(db_engine.url):
+        drop_database(db_engine.url)
+    # database initialization
+    create_database(db_engine.url)
+    print("Сreating a database.")
+    # Tables created
+    Base.metadata.create_all(db_engine)
+    print("Creating tables.")
 
 
 if __name__ == "__main__":

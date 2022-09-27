@@ -1,10 +1,18 @@
 import re
+import typing
 import requests
+import yaml
+import argparse
 from parsel import Selector
 from prettytable import PrettyTable
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
+# importing a database table class
+from db_init import Algorithm
 
 
-def getting_the_path_to_tables(url: str) -> list[str]:
+def get_the_path_to_tables(url: str) -> list[str]:
     """
         Receives the url as input and returns a list of required tables
         @:param url
@@ -25,9 +33,9 @@ def getting_the_path_to_tables(url: str) -> list[str]:
     return table_path
 
 
-def getting_the_contents_of_tables(selector_table_path: Selector) -> list[list[list[str]]]:
+def get_the_contents_of_tables(selector_table_path: Selector) -> list[list[list[str]]]:
     """
-    getting values from rows of paired tables
+    Getting values from rows of paired tables
     @:param selector_table_path:
     @:return table_contents
     """
@@ -50,10 +58,10 @@ def getting_the_contents_of_tables(selector_table_path: Selector) -> list[list[l
 
 def filling_in_the_table(table: PrettyTable, content: list[list[list[list[str]]]]) -> PrettyTable:
     """
-    filling the table with fields from the list of values
-    @param table
-    @param content
-    @return table
+    Filling the table with fields from the list of values
+    @:param table
+    @:param content
+    @:return table
     """
     for table_number in range(len(content)):
         # adding rows to a table
@@ -62,11 +70,62 @@ def filling_in_the_table(table: PrettyTable, content: list[list[list[list[str]]]
     return table
 
 
+def database_initialization(conf: dict[str:dict[str:typing.Any]]) -> Session:
+    """
+    A session with the database is initialized
+    @:param conf
+    @:return db_session
+    """
+    db_url = f"postgresql://{conf['db']['user']}:{conf['db']['password']}@{conf['db']['host']}:{conf['db']['port']}/{conf['db']['name']}"
+    print(f"Connection to {db_url}")
+    db_engine = create_engine(db_url)
+    db_session = Session(db_engine)
+    return db_session
+
+
+def add_data_to_the_database(list_table_content: list[list[list[list[str]]]], db_session: Session) -> None:
+    """
+    Entering data into the database
+    @:param list_table_content
+    @:param db_session
+    @:return: None
+    """
+    id_num = 0
+    for table in range(len(list_table_content)):
+        for rows in range(1, len(list_table_content[table])):
+            id_num += 1
+            data_row = Algorithm(id=id_num, operation=list_table_content[table][rows][0],
+                                 example=list_table_content[table][rows][1],
+                                 complexity=list_table_content[table][rows][2], note=list_table_content[table][rows][3],
+                                 type=table)
+            db_session.add(data_row)
+            db_session.commit()
+            db_session.close()
+
+
+def str_to_bool(line: str) -> bool:
+    if isinstance(line, bool):
+        return line
+    if line.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    if line.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 def main() -> None:
-    table = PrettyTable()
+    # parse script arguments
+    parser = argparse.ArgumentParser(
+        description="Collecting tables from the site and output to the console or database.")
+    parser.add_argument("--dry_run", "-d_r",
+                        help="Specify the parameter True to output the table to the console or False to write values to the database",
+                        default='True', dest="dry_run")
+    args: argparse.Namespace = parser.parse_args()
+
     url = 'https://proglib.io/p/slozhnost-algoritmov-i-operaciy-na-primere-python-2020-11-03'
+
     # the path to the required tables
-    table_path: list[str] = getting_the_path_to_tables(url)
+    table_path: list[str] = get_the_path_to_tables(url)
 
     list_of_table_contents: list[list[list[list[str]]]] = []
     selector_table_path: list[Selector] = []
@@ -74,16 +133,38 @@ def main() -> None:
     for table_number in range(len(table_path)):
         # converting values to the Selector type
         selector_table_path.append(Selector(table_path[table_number]))
+
         # filling the list with values from the received tables
-        list_of_table_contents.append(getting_the_contents_of_tables(selector_table_path[table_number]))
+        list_of_table_contents.append(get_the_contents_of_tables(selector_table_path[table_number]))
 
-    # adding field names to a table
-    table.field_names = list_of_table_contents[0][0]
+    if str_to_bool(args.dry_run):
 
-    # formation of the resulting table
-    resulting_table: PrettyTable = filling_in_the_table(table, list_of_table_contents)
+        # output in console
+        table = PrettyTable()
 
-    print(resulting_table)
+        # adding field names to a table
+        table.field_names = list_of_table_contents[0][0]
+
+        # formation of the resulting table
+        resulting_table: PrettyTable = filling_in_the_table(table, list_of_table_contents)
+        print(resulting_table)
+    else:
+        with open("config.yaml", "r") as f:
+            conf: dict[dict[str:typing.Any]] = yaml.safe_load(f)
+        db_session: Session = database_initialization(conf)
+        rows: int = db_session.query(Algorithm).count()
+
+        # delete old data
+        if rows != 0:
+            print('Deleting old data...')
+            # delete
+            db_session.query(Algorithm).delete()
+            db_session.commit()
+
+        # insert new data
+        print('Adding new data...')
+        add_data_to_the_database(list_of_table_contents, db_session)
+        print(f"DB succesfull updated!")
 
 
 if __name__ == "__main__":

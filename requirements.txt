@@ -1,0 +1,7 @@
+parsel
+prettytable
+psycopg2
+PyYAML
+requests
+SQLAlchemy
+SQLAlchemy-Utils
