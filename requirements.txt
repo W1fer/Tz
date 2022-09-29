@@ -5,3 +5,4 @@ PyYAML
 requests
 SQLAlchemy
 SQLAlchemy-Utils
+tornado

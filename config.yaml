@@ -6,3 +6,5 @@ db:
     host: localhost
     port: 5432
 
+web_app:
+    port: 8888

@@ -33,8 +33,6 @@ class User(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.datetime.utcnow())
     last_request = Column(DateTime)
 
-    def __str__(self):
-        return f"<User: id={self.id} login={self.login} password={self.password}>"
 
 
 def main() -> None:
@@ -46,11 +44,15 @@ def main() -> None:
     db_url: str = f"postgresql://{conf['db']['user']}:{conf['db']['password']}@{conf['db']['host']}:{conf['db']['port']}/{conf['db']['name']}"
     print(f"Connection to {db_url}")
     db_engine: Engine = create_engine(db_url)
+
+    # check and deleting the database
     if database_exists(db_engine.url):
         drop_database(db_engine.url)
+
     # database initialization
     create_database(db_engine.url)
     print("Сreating a database.")
+
     # Tables created
     Base.metadata.create_all(db_engine)
     print("Creating tables.")

@@ -1,0 +1,184 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Postgresql Data Structure API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/login": {
+      "get": {
+        "summary": "authentication",
+        "tags": [
+          "User"
+        ],
+        "description": "Getting authorisation page",
+        "responses": {
+          "200": {
+            "description": "Successful authorisation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Hello": {
+                      "type": "string",
+                      "example": "W1fer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Authorisation",
+        "tags": [
+          "User"
+        ],
+        "description": "Sending authorisation data",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Login": {
+                    "type": "string",
+                    "example": "W1fer"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful authorisation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "Hello": {
+                      "type": "string",
+                      "example": "W1fer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/registration": {
+      "get": {
+        "summary": "Registration",
+        "tags": [
+          "User"
+        ],
+        "description": "Getting the registration page",
+        "responses": {
+          "200": {
+            "description": "Successful registration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a user.",
+        "tags": [
+          "User"
+        ],
+        "description": "Creates a user and writes it to the database",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Login": {
+                    "type": "string",
+                    "example": "W1fer"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful authorisation"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/data": {
+      "get": {
+        "summary": "database output",
+        "tags": [
+          "Database"
+        ],
+        "description": "Output of database fields",
+        "responses": {
+          "200": {
+            "description": "Successful authorisation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "operation": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "type": "string"
+                      },
+                      "complexity": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  }
+}

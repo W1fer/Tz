@@ -56,7 +56,7 @@ def get_the_contents_of_tables(selector_table_path: Selector) -> list[list[list[
     return table_contents
 
 
-def filling_in_the_table(table: PrettyTable, content: list[list[list[list[str]]]]) -> PrettyTable:
+def fill_in_the_table(table: PrettyTable, content: list[list[list[list[str]]]]) -> PrettyTable:
     """
     Filling the table with fields from the list of values
     @:param table
@@ -104,13 +104,10 @@ def add_data_to_the_database(list_table_content: list[list[list[list[str]]]], db
 
 
 def str_to_bool(line: str) -> bool:
-    if isinstance(line, bool):
-        return line
-    if line.lower() in ('yes', 'true', 't', 'y', '1'):
+    if line.lower() in ('yes', 'true', 't', 'y'):
         return True
-    if line.lower() in ('no', 'false', 'f', 'n', '0'):
+    if line.lower() in ('no', 'false', 'f', 'n'):
         return False
-    raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def main() -> None:
@@ -146,12 +143,14 @@ def main() -> None:
         table.field_names = list_of_table_contents[0][0]
 
         # formation of the resulting table
-        resulting_table: PrettyTable = filling_in_the_table(table, list_of_table_contents)
+        resulting_table: PrettyTable = fill_in_the_table(table, list_of_table_contents)
         print(resulting_table)
     else:
         with open("config.yaml", "r") as f:
             conf: dict[dict[str:typing.Any]] = yaml.safe_load(f)
         db_session: Session = database_initialization(conf)
+
+        # number of rows in the Algorithm table
         rows: int = db_session.query(Algorithm).count()
 
         # delete old data
